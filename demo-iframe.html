@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hukuk Bürosu Yapay Zeka Asistanı — Demo</title>
+  <meta name="description" content="Web sitenize gelen ziyaretçileri 7/24 karşılayan, genel bilgilendiren ve randevu taleplerini düzenli şekilde mailinize ileten hukuk bürosu yapay zeka asistanı." />
+
+  <style>
+    :root{
+      --bg0:#050816;
+      --bg1:#070B1E;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:#a7b0c0;
+      --muted2:#93a0b5;
+      --accent1:#9b87f5;
+      --accent2:#7c6bf0;
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(900px 420px at 18% 10%, rgba(155,135,245,.18), transparent 55%),
+        radial-gradient(740px 420px at 82% 18%, rgba(124,107,240,.16), transparent 55%),
+        radial-gradient(900px 520px at 50% 110%, rgba(18, 216, 241, .06), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .container{
+      width:min(1180px, 92vw);
+      margin:0 auto;
+      padding: 28px 0 92px;
+    }
+
+    /* Top Nav */
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding: 14px 0 18px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .badge{
+      font-size:12px;
+      color:rgba(255,255,255,.85);
+      background: linear-gradient(135deg, rgba(155,135,245,.35), rgba(124,107,240,.18));
+      border:1px solid rgba(155,135,245,.35);
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .nav-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    /* Buttons */
+    .btn{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding: 11px 14px;
+      border-radius: 14px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition: .18s ease;
+      box-shadow: 0 8px 22px rgba(0,0,0,.18);
+      user-select:none;
+      font-weight:600;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
+    .btn:active{ transform: translateY(0px); }
+
+    .btn.primary{
+      border: none;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      box-shadow: 0 16px 42px rgba(124,107,240,.25);
+    }
+    .btn.primary:hover{ filter: brightness(1.05); }
+    .btn.ghost{
+      background: transparent;
+    }
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:18px;
+      margin-top: 10px;
+    }
+    @media (max-width: 980px){
+      .hero{ grid-template-columns:1fr; }
+    }
+
+    .panel{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hero-left{
+      padding: 28px;
+      position:relative;
+    }
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:rgba(255,255,255,.88);
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .hero h1{
+      margin: 0 0 10px 0;
+      font-size: clamp(28px, 3vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.6px;
+    }
+    .hero p{
+      margin:0 0 16px 0;
+      color: var(--muted);
+      font-size: 15.5px;
+      line-height: 1.6;
+      max-width: 62ch;
+    }
+    .hero-cta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top: 16px;
+    }
+
+    .hero-meta{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top: 20px;
+    }
+    @media (max-width: 560px){
+      .hero-meta{ grid-template-columns:1fr; }
+    }
+    .meta-card{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 12px;
+      min-height: 78px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+    }
+    .meta-title{
+      font-weight:700;
+      font-size: 13px;
+      color: rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .meta-desc{
+      font-size: 12.5px;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+
+    /* Right: Example chat flow */
+    .hero-right{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .side-title{
+      font-weight:800;
+      letter-spacing: -0.2px;
+      font-size: 14px;
+      color: rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 4px;
+    }
+    .chat-flow{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding: 12px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--shadow2);
+    }
+    .bubble{
+      max-width: 95%;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 10px 11px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: rgba(255,255,255,.92);
+    }
+    .bubble.user{
+      margin-left:auto;
+      background: linear-gradient(135deg, rgba(155,135,245,.22), rgba(124,107,240,.10));
+      border-color: rgba(155,135,245,.25);
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size: 12px;
+      color: rgba(255,255,255,.80);
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--stroke);
+      padding: 7px 10px;
+      border-radius: 999px;
+      width:fit-content;
+    }
+
+    /* Sections */
+    .section{
+      margin-top: 16px;
+      padding: 22px;
+    }
+    .section h2{
+      margin:0 0 6px 0;
+      font-size: 20px;
+      letter-spacing: -0.3px;
+    }
+    .section p.lead{
+      margin:0 0 14px 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14.5px;
+      max-width: 80ch;
+    }
+
+    /* Cards grid */
+    .grid3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .grid3{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.20);
+      min-height: 120px;
+    }
+    .card h3{
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .card p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13.8px;
+      line-height: 1.55;
+    }
+    .icon{
+      width:34px;
+      height:34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 12px;
+      border:1px solid rgba(155,135,245,.25);
+      background: linear-gradient(135deg, rgba(155,135,245,.24), rgba(124,107,240,.08));
+      box-shadow: 0 12px 26px rgba(124,107,240,.12);
+      flex: 0 0 auto;
+    }
+    .icon svg{ width:18px; height:18px; opacity:.95; }
+
+    /* Steps */
+    .steps{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .steps{ grid-template-columns: 1fr; }
+    }
+    .step{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius: 18px;
+      padding: 14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .step .n{
+      width:32px; height:32px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      font-weight:800;
+      margin-bottom: 10px;
+    }
+    .step h3{
+      margin:0 0 6px 0;
+      font-size: 14.8px;
+    }
+    .step p{
+      margin:0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13.8px;
+    }
+
+    /* Trust */
+    .trust{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .trust{ grid-template-columns: 1fr; }
+    }
+    .list{
+      margin:0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 13.8px;
+    }
+
+    /* Email mock */
+    .mail{
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      border-radius: 18px;
+      overflow:hidden;
+      box-shadow: var(--shadow2);
+    }
+    .mail-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      font-size: 13px;
+      color: rgba(255,255,255,.92);
+      font-weight:700;
+    }
+    .mail-body{
+      padding: 14px;
+      font-size: 13.6px;
+      color: rgba(255,255,255,.90);
+      line-height: 1.62;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px 12px;
+      margin-top: 10px;
+      color: rgba(255,255,255,.90);
+    }
+    .k{ color: var(--muted2); font-weight:600; }
+    .v{ color: rgba(255,255,255,.92); }
+    @media (max-width: 560px){
+      .kv{ grid-template-columns: 1fr; }
+    }
+
+    /* FAQ */
+    details.faq{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 12px;
+      margin-bottom: 10px;
+    }
+    details.faq summary{
+      cursor:pointer;
+      list-style:none;
+      font-weight:700;
+      color: rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      user-select:none;
+    }
+    details.faq summary::-webkit-details-marker{ display:none; }
+    .faq p{
+      margin: 10px 0 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13.8px;
+    }
+    .chev{
+      width: 28px; height: 28px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 10px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      flex: 0 0 auto;
+    }
+    details[open] .chev{ transform: rotate(180deg); }
+
+    /* Footer CTA */
+    .cta{
+      margin-top: 14px;
+      padding: 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .cta h3{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:-0.2px;
+    }
+    .cta p{
+      margin:6px 0 0 0;
+      color: var(--muted);
+      font-size: 13.8px;
+      line-height:1.55;
+      max-width: 70ch;
+    }
+
+    /* Widget (Bottom-right popup) */
+    #ai-support-chat-root{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      z-index:999999;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    #ai-chat-toggle{
+      width:54px;
+      height:54px;
+      border-radius:999px;
+      border:none;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 10px 25px rgba(0,0,0,.45);
+      cursor:pointer;
+      outline:none;
+      transition: .18s ease;
+    }
+    #ai-chat-toggle:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    #ai-chat-toggle:active{ transform: translateY(0px); }
+
+    #ai-chat-toggle-icon{ font-size: 24px; }
+
+    #ai-chat-window{
+      position:absolute;
+      bottom:68px;
+      right:0;
+      width: 360px;
+      height: 520px;
+      background: transparent;
+      border-radius: 18px;
+      overflow:hidden;
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
+      transform: translateY(12px) scale(.96);
+      transform-origin: bottom right;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s opacity ease-out, .22s transform ease-out;
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+    }
+    #ai-chat-window iframe{
+      width:100%;
+      height:100%;
+      border:none;
+      border-radius:18px;
+      overflow:hidden;
+      background: rgba(0,0,0,.15);
+    }
+
+    /* Tiny helpers */
+    .hr{
+      height:1px;
+      background: rgba(255,255,255,.10);
+      margin: 12px 0;
+      border:0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Nav -->
+    <div class="nav">
+      <div class="brand">
+        <span class="badge">Hukuk Bürosu AI Asistanı</span>
+      </div>
+      <div class="nav-actions">
+        <a class="btn ghost" href="#sss">SSS</a>
+        <a class="btn ghost" href="#ornek-mail">Örnek Mail</a>
+        <button class="btn primary" type="button" id="openDemoTop">
+          <span>Canlı demo iste</span>
+          <span style="opacity:.9">→</span>
+        </button>
+        <a class="btn" href="#teklif">Fiyat teklifi al</a>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="panel hero-left">
+        <div class="kicker">
+          <span style="opacity:.9">⚡</span>
+          <span>Web sitenizde 7/24 çalışan randevu & talep asistanı</span>
+        </div>
+
+        <h1>Hukuk Bürosu Yapay Zeka Asistanı</h1>
+        <p>
+          Web sitenize gelen ziyaretçileri 7/24 karşılar, genel bilgilendirir ve randevu taleplerini
+          düzenli şekilde mailinize iletir. Ziyaretçi daha netleşmiş şekilde size gelir; ekip daha az bölünür.
+        </p>
+
+        <div class="hero-cta">
+          <button class="btn primary" type="button" id="openDemoHero">Canlı demo iste</button>
+          <a class="btn" href="#teklif">Fiyat teklifi al</a>
+        </div>
+
+        <div class="hero-meta">
+          <div class="meta-card">
+            <div class="meta-title">✅ Hızlı kurulum</div>
+            <div class="meta-desc">Web sitenize tek satır snippet ile eklenir.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-title">✅ Düzenli talep</div>
+            <div class="meta-desc">Ad-soyad, telefon, konu özeti tek mail olarak düşer.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-title">✅ Sınırlarını bilir</div>
+            <div class="meta-desc">Kesin hüküm vermez; randevuya yönlendirir.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: example chat flow -->
+      <div class="panel hero-right">
+        <div class="side-title">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 8h10M7 12h6M6 20l-2 2v-5a3 3 0 0 1-3-3V7a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4H9l-3 2Z" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+            </svg>
+          </span>
+          Örnek sohbet akışı
+        </div>
+
+        <div class="chat-flow" aria-label="Örnek sohbet akışı">
+          <div class="tag">🟣 Ziyaretçi → Bot</div>
+
+          <div class="bubble user">
+            Merhaba, işten çıkarıldım. Tazminatımı nasıl alabilirim?
+          </div>
+          <div class="bubble">
+            Genel olarak iş akdinin fesih şekline göre kıdem/ihbar tazminatı şartları değişir. Öncelikle fesih bildirimi, çalışma süresi ve gerekçe önemlidir.
+            İstersen durumunu netleştirmek için birkaç soru sorayım.
+          </div>
+
+          <div class="bubble user">
+            Randevu almak istiyorum.
+          </div>
+          <div class="bubble">
+            Elbette. Randevu talebinizi iletmem için lütfen şu 3 bilgiyi paylaşın:
+            <br><b>1)</b> Ad Soyad <b>2)</b> Telefon <b>3)</b> Konu özeti
+          </div>
+
+          <div class="bubble user">
+            Enis Y. / 05xx xxx xx xx / İşten çıkarılma ve tazminat
+          </div>
+          <div class="bubble">
+            Teşekkürler. Talebinizi büroya iletiyorum. Uygun zamanda ekip sizi arayarak randevu detaylarını paylaşacaktır.
+          </div>
+        </div>
+
+        <div class="tag">💡 Canlı demoyu sağ alttan da açabilirsin</div>
+      </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="panel section" id="faydalar">
+      <h2>3 ana fayda</h2>
+      <p class="lead">Ziyaretçiyi “arayıp sormadan” önce netleştirir; ekibin yükünü azaltır; talebi düzenli hale getirir.</p>
+
+      <div class="grid3">
+        <div class="card">
+          <h3>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 12l5 5L20 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Daha fazla dönüşüm
+          </h3>
+          <p>Ziyaretçi “arayayım mı?” demeden önce netleşir, randevuya daha sıcak gelir.</p>
+        </div>
+
+        <div class="card">
+          <h3>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v5l3 2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 12a9 9 0 1 1-3.2-6.9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+              </svg>
+            </span>
+            Zaman kazandırır
+          </h3>
+          <p>Sık sorulan sorulara anında yanıt; ofis telefon trafiği ve tekrar eden açıklamalar azalır.</p>
+        </div>
+
+        <div class="card">
+          <h3>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h16v10H4z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 7l8 6 8-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Düzenli talep toplar
+          </h3>
+          <p>Ad-soyad + telefon + konu özeti; size tek mail olarak düşer. Takip etmek kolaylaşır.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="panel section" id="nasil-calisir">
+      <h2>Nasıl çalışır</h2>
+      <p class="lead">Basit, anlaşılır, ölçülebilir: ziyaretçi konuşur, bot yönlendirir, talep mail olarak gelir.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="n">1</div>
+          <h3>Ziyaretçi sorar → bot genel çerçeveyi verir</h3>
+          <p>Genel bilgilendirme yapar, netleştirici sorularla ihtiyacı anlar.</p>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <h3>Randevu isterse → 3 bilgi toplar</h3>
+          <p>Ad Soyad, Telefon, Konu özeti. Form hissi vermeden, sohbet içinde alır.</p>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <h3>Büroya mail düşer → siz dönüş yaparsınız</h3>
+          <p>Talep tek mail olarak gelir. Siz uygun zamanınızda arar/mesaj atarsınız.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust & limits + Email mock -->
+    <div class="panel section" id="guven">
+      <h2>Güven & sınırlar</h2>
+      <p class="lead">Satışta güven verir: botun sınırları net, yönlendirmesi doğru.</p>
+
+      <div class="trust">
+        <div class="card">
+          <h3>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l8 4v6c0 5-3.4 9.4-8 10-4.6-.6-8-5-8-10V6l8-4z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9.5 12.2l1.8 1.8 3.7-4.2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Net sınırlar (kritik)
+          </h3>
+          <ul class="list">
+            <li><b>Bot avukat değildir;</b> kesin sonuç/garanti vermez.</li>
+            <li><b>Hassas verileri</b> (TCKN/IBAN vb.) paylaşmamayı uyarır.</li>
+            <li>Dosyaya göre değişen konularda sınırı korur, <b>görüşme randevusuna yönlendirir.</b></li>
+          </ul>
+        </div>
+
+        <div class="card" id="ornek-mail">
+          <h3>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 6h16v12H4z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 7l8 6 8-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Örnek mail (mockup)
+          </h3>
+
+          <div class="mail" style="margin-top:10px;">
+            <div class="mail-head">
+              <div>📩 Yeni Randevu Talebi — Hukuk Asistanı</div>
+              <div style="opacity:.75; font-weight:600;">websiteniz.com</div>
+            </div>
+            <div class="mail-body">
+              Merhaba, web siteniz üzerinden yeni bir randevu talebi alındı. Detaylar aşağıdadır:
+              <div class="kv">
+                <div class="k">Ad Soyad</div><div class="v">Enis Y.</div>
+                <div class="k">Telefon</div><div class="v">05xx xxx xx xx</div>
+                <div class="k">Konu özeti</div><div class="v">İşten çıkarılma, kıdem/ihbar tazminatı ve fesih bildirimi</div>
+                <div class="k">Kaynak</div><div class="v">Web sitesi chat widget</div>
+                <div class="k">Zaman</div><div class="v">25.12.2025 20:40</div>
+              </div>
+
+              <hr class="hr">
+              <div style="color: var(--muted); font-size: 12.8px;">
+                Not: Bot hukuki danışmanlık vermez; ziyaretçiyi görüşmeye yönlendirmek için temel bilgi toplar.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="panel section" id="sss">
+      <h2>SSS</h2>
+      <p class="lead">Müşterinin kafasındaki itirazları hızlıca temizleyen bölüm. (İstersen bunu daha da uzatırız.)</p>
+
+      <details class="faq">
+        <summary>
+          “Ücret söyler mi?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Rakam vermez; “dosyaya göre değişir” çerçevesini kurar ve görüşme/randevu yönlendirmesi yapar.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          “Hangi alanlarda cevap verir?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Genel bilgilendirme + ofisinizin hizmet alanlarına göre özelleştirilir (ör: iş, icra, aile, ceza vb.).</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          “Kurulum kaç sürer?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Web sitenize tek satır kod (widget) ile eklenir. İstenirse renk/başlık/karşılama metni marka tonunuza göre ayarlanır.</p>
+      </details>
+
+      <!-- Yeni eklenenler -->
+      <details class="faq">
+        <summary>
+          “Bot yanlış yönlendirirse ne olur?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Bot kesin hüküm kurmaz; riski azaltmak için “genel bilgilendirme” sınırında kalır ve kritik noktalarda randevuya yönlendirir. (Bu metinleri daha da netleştirebiliriz.)</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          “KVKK / hassas veri tarafı nasıl yönetiliyor?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Bot sohbet sırasında hassas veri (TCKN/IBAN vb.) paylaşılmaması için uyarı verir ve yalnızca temel randevu bilgilerini toplamaya odaklanır.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          “Markama göre konuşma tonu değişebilir mi?”
+          <span class="chev">⌄</span>
+        </summary>
+        <p>Evet. Karşılama metni, ofis dili, hizmet alanları ve yönlendirme cümleleri büronun tonuna göre uyarlanabilir.</p>
+      </details>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="panel cta" id="teklif">
+      <div>
+        <h3>Web sitenize ekleyelim, randevu talepleri düzenli gelsin.</h3>
+        <p>Canlı demoyu sağ alttan açıp test edebilirsin. İstersen sayfana uygun renk/başlık ve hizmet alanlarını da birlikte netleştiririz.</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" type="button" id="openDemoBottom">Canlı demo iste</button>
+        <a class="btn" href="#" onclick="alert('Bu butonu form sayfana/WhatsApp’a değil, teklif formuna bağlayacaksın.'); return false;">Fiyat teklifi al</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AI Chatbot Widget (Bottom-right popup) -->
+  <div id="ai-support-chat-root">
+    <button id="ai-chat-toggle" aria-label="Canlı demo sohbetini aç/kapat">
+      <span id="ai-chat-toggle-icon">💬</span>
+    </button>
+
+    <div id="ai-chat-window" role="dialog" aria-label="Canlı demo sohbet penceresi">
+      <!-- İSTEDİĞİN FORM -->
+      <iframe
+        src="https://hukuk-test.onrender.com/test.html?embed=1&brand=hukuk-test"
+        allow="clipboard-read; clipboard-write"
+        loading="lazy"
+      ></iframe>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const btn  = document.getElementById("ai-chat-toggle");
+      const icon = document.getElementById("ai-chat-toggle-icon");
+      const win  = document.getElementById("ai-chat-window");
+
+      const openTop    = document.getElementById("openDemoTop");
+      const openHero   = document.getElementById("openDemoHero");
+      const openBottom = document.getElementById("openDemoBottom");
+
+      let isOpen = false;
+
+      function setOpen(open){
+        isOpen = open;
+        if(open){
+          win.style.opacity = "1";
+          win.style.pointerEvents = "auto";
+          win.style.transform = "translateY(0) scale(1)";
+          icon.textContent = "✕";
+        }else{
+          win.style.opacity = "0";
+          win.style.pointerEvents = "none";
+          win.style.transform = "translateY(12px) scale(.96)";
+          icon.textContent = "💬";
+        }
+      }
+
+      btn.addEventListener("click", () => setOpen(!isOpen));
+
+      function openDemo(){
+        setOpen(true);
+        // küçük bir scroll/jump yapmasın diye sadece açıyoruz
+      }
+
+      if(openTop) openTop.addEventListener("click", openDemo);
+      if(openHero) openHero.addEventListener("click", openDemo);
+      if(openBottom) openBottom.addEventListener("click", openDemo);
+
+      setOpen(false);
+    })();
+  </script>
+</body>
+</html>
